@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import DashboardOverview from '../components/DashboardOverview';
 import DepositAndWithdrawal from '../components/DepositAndWithdrawal';
@@ -41,8 +42,20 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-gray-900">
-      {/* Fixed Sidebar */}
-      <div className="hidden lg:block fixed left-0 top-0 h-full w-80 z-30">
+      {/* Mobile sidebar overlay */}
+      <div
+        className={`fixed inset-0 z-40 lg:hidden bg-black/50 transition-opacity ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      {/* Sidebar (mobile & desktop) */}
+      <div
+        className={`fixed top-0 left-0 h-full w-72 z-50 transform bg-gray-800 transition-transform lg:translate-x-0 lg:block ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -51,8 +64,29 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Main content area (scrollable) */}
-      <div className="flex-1 lg:ml-80 h-full overflow-y-auto p-6">
+      {/* Main content with styled scroll */}
+      <div className="flex-1 lg:ml-72 h-full overflow-y-auto p-4 sm:p-6 
+        scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 hover:scrollbar-thumb-gray-600">
+        
+        {/* Mobile top bar with toggle */}
+        <div className="flex items-center justify-between lg:hidden mb-4">
+          <button
+            className="p-2 rounded-md text-gray-200 hover:bg-gray-700"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="text-lg font-semibold text-white">Dashboard</h1>
+          {sidebarOpen && (
+            <button
+              className="p-2 rounded-md text-gray-200 hover:bg-gray-700"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X size={24} />
+            </button>
+          )}
+        </div>
+
         {renderContent()}
       </div>
     </div>

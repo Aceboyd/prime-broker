@@ -12,26 +12,30 @@ const Trader = () => {
 
   const handleSelectTrader = (traderId) => {
     setSelectedTrader(traderId);
-    // Add logic to assign trader
     console.log(`Selected trader: ${traderId}`);
   };
 
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Select Trader</h1>
           <p className="text-gray-400">Choose a professional trader to manage your investments</p>
         </div>
       </div>
+
+      {/* Trader List */}
       <div className="glass-effect rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-6">Available Traders</h3>
+
         <div className="space-y-4">
           {mockTraders.map((trader) => (
             <div
               key={trader.id}
               className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all duration-300"
             >
+              {/* Avatar + Info */}
               <div className="flex items-center space-x-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
@@ -41,20 +45,25 @@ const Trader = () => {
                   <p className="text-gray-400 text-sm">{trader.expertise}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-white font-semibold">{trader.successRate} Success</p>
-                <p className="text-gray-400 text-sm">{trader.trades} Trades</p>
+
+              {/* Stats + Select */}
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-white font-semibold">{trader.successRate} Success</p>
+                  <p className="text-gray-400 text-sm">{trader.trades} Trades</p>
+                </div>
+
+                <button
+                  onClick={() => handleSelectTrader(trader.id)}
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                    selectedTrader === trader.id
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  {selectedTrader === trader.id ? 'Selected' : 'Select'}
+                </button>
               </div>
-              <button
-                onClick={() => handleSelectTrader(trader.id)}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                  selectedTrader === trader.id
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {selectedTrader === trader.id ? 'Selected' : 'Select'}
-              </button>
             </div>
           ))}
         </div>

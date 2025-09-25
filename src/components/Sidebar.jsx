@@ -87,7 +87,30 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {/* Scrollable Menu */}
-          <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 hover:scrollbar-thumb-gray-500 transition-all duration-300">
+          <nav
+            className="flex-1 overflow-y-auto px-4 py-4 
+              scrollbar-thin 
+              scrollbar-thumb-rounded-full 
+              scrollbar-track-rounded-full 
+              scrollbar-track-gray-900 
+              transition-all duration-300"
+          >
+            <style>
+              {`
+                /* Custom Gradient Scrollbar */
+                .scrollbar-thin::-webkit-scrollbar {
+                  width: 6px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb {
+                  background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+                  border-radius: 9999px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-track {
+                  background: #111827;
+                  border-radius: 9999px;
+                }
+              `}
+            </style>
             <ul className="space-y-2">
               {menuItems.map(({ id, icon: Icon, label }) => (
                 <li key={id}>
@@ -97,9 +120,10 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
                       setSidebarOpen(false);
                     }}
                     className={`w-full flex items-center space-x-4 px-4 py-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500
-                    ${activeTab === id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    ${
+                      activeTab === id
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                     }`}
                     aria-current={activeTab === id ? 'page' : undefined}
                   >
@@ -115,7 +139,9 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
           <div className="p-2 border-t border-gray-800">
             <button
               className="w-full flex items-center space-x-4 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onClick={() => {/* Add sign out logic */}}
+              onClick={() => {
+                /* Add sign out logic */
+              }}
             >
               <LogOut className="w-6 h-6" />
               <span className="font-medium text-base">Sign Out</span>
