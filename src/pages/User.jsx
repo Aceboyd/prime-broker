@@ -11,7 +11,7 @@ import Trader from '../components/Trader';
 import ChangePassword from '../components/ChangePassword';
 import LoginHistory from '../components/LoginHistory';
 
-const Dashboard = () => {
+const User = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -93,4 +93,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default User;
