@@ -18,7 +18,6 @@ const Login = () => {
     const payload = { email, password };
 
     try {
-      console.log('Sending admin login request with payload:', payload); // Debug log
       const response = await axios.post(
         'https://prime-api-gm2o.onrender.com/auth/admin/login',
         payload,
