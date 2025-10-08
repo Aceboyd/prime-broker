@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Bitcoin, ArrowLeft, Check } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    country: '',
+    phoneNumber: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -15,10 +20,56 @@ const SignUp = () => {
     marketingEmails: false
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle sign up logic here
-    console.log('Sign up:', formData);
+    
+    // Map formData to API payload
+    const payload = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      country: formData.country,
+      phone: formData.phoneNumber,
+      role: 'user'
+    };
+
+    try {
+      console.log('Sending request with payload:', payload); // Debug log
+      const response = await axios.post(
+        'https://prime-api-gm2o.onrender.com/auth/register',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      toast.success('Registration successful! Redirecting to sign-in...', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      console.log('Sign up success:', response.data);
+      navigate('/signin'); // Redirect to sign-in page
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      toast.error(`Error: ${errorMessage}`, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      console.error('Sign up error:', error.response?.data || error);
+    }
   };
 
   const handleChange = (e) => {
@@ -87,6 +138,55 @@ const SignUp = () => {
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium text-gray-300 mb-2">
+                Country
+              </label>
+              <select
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all"
+                style={{ backgroundColor: 'rgba(244, 240, 240, 0.1)' }}
+                required
+              >
+                <option value="" disabled style={{ color: 'white' }}>Select your country</option>
+                <option value="US" style={{ color: 'black' }}>United States</option>
+                <option value="CN" style={{ color: 'black' }}>China</option>
+                <option value="IN" style={{ color: 'black' }}>India</option>
+                <option value="GB" style={{ color: 'black' }}>United Kingdom</option>
+                <option value="CA" style={{ color: 'black' }}>Canada</option>
+                <option value="AU" style={{ color: 'black' }}>Australia</option>
+                <option value="DE" style={{ color: 'black' }}>Germany</option>
+                <option value="FR" style={{ color: 'black' }}>France</option>
+                <option value="JP" style={{ color: 'black' }}>Japan</option>
+                <option value="BR" style={{ color: 'black' }}>Brazil</option>
+                <option value="NG" style={{ color: 'black' }}>Nigeria</option>
+                <option value="ZA" style={{ color: 'black' }}>South Africa</option>
+                <option value="RU" style={{ color: 'black' }}>Russia</option>
+                <option value="MX" style={{ color: 'black' }}>Mexico</option>
+                <option value="KR" style={{ color: 'black' }}>South Korea</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-300 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                placeholder="+1 123 456 7890"
+                pattern="^[+]?[0-9\\-()\\s]*$"
+                required
+              />
             </div>
 
             <div>
@@ -176,24 +276,11 @@ const SignUp = () => {
                   </a>
                 </span>
               </label>
-
-              <label className="flex items-start">
-                <input
-                  type="checkbox"
-                  name="marketingEmails"
-                  checked={formData.marketingEmails}
-                  onChange={handleChange}
-                  className="w-4 h-4 mt-1 text-primary-500 bg-white/10 border-white/20 rounded focus:ring-primary-500 focus:ring-2"
-                />
-                <span className="ml-3 text-sm text-gray-300">
-                  I want to receive marketing emails about new features and promotions
-                </span>
-              </label>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg hover:from-primary-600 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 transform hover:scale-105"
             >
               Create Account
             </button>
