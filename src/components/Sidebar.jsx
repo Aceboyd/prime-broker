@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bitcoin,
@@ -14,8 +14,78 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
+  const [user, setUser] = useState(null);
+  const token = localStorage.getItem('authToken'); // ✅ match login key
+
+  // ✅ Fetch authenticated user profile
+  useEffect(() => {
+    if (!token) return;
+
+    let isMounted = true;
+
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get(
+          'https://prime-api-gm2o.onrender.com/auth/profile',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              accept: 'application/json',
+            },
+          }
+        );
+
+        if (response.data?.success && isMounted) {
+          setUser(response.data.data);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching user profile:', error.response?.data || error.message);
+      }
+    };
+
+    fetchUserProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem('authToken');
+
+    try {
+      await axios.post(
+        'https://prime-api-gm2o.onrender.com/auth/logout',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      toast.success('Logged out successfully!', {
+        position: 'top-right',
+        autoClose: 2000,
+      });
+
+      localStorage.removeItem('authToken');
+      setTimeout(() => {
+        window.location.href = '/signin';
+      }, 2000);
+    } catch (error) {
+      console.error('Logout failed:', error.response?.data || error.message);
+
+      // Even if API fails, still clear token and redirect
+      localStorage.removeItem('authToken');
+      window.location.href = '/signin';
+    }
+  };
+
   const menuItems = [
     { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
     { id: 'deposit-withdraw', icon: PieChart, label: 'Deposit and Withdraw' },
@@ -66,38 +136,42 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {/* User Info */}
-          <div className="p-1 border-b border-gray-800">
+          <div className="p-4 border-b border-gray-800">
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">JD</span>
+                <span className="text-white font-semibold text-lg">
+                  {user
+                    ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase()
+                    : '...'}
+                </span>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">John Doe</h3>
-                <p className="text-sm text-gray-400">Premium Member</p>
+                <h3 className="font-semibold text-lg">
+                  {user
+                    ? `${user.first_name} ${user.last_name}`
+                    : 'Loading user...'}
+                </h3>
               </div>
             </div>
+
             <div className="mt-4 p-4 bg-gradient-to-r from-purple-600/20 to-pink-500/20 rounded-lg">
               <div className="flex items-center justify-between text-sm text-gray-300">
-                <span>Portfolio Value</span>
+                <span>Total Balance</span>
                 <Bell className="w-5 h-5 text-pink-400" />
               </div>
-              <p className="text-3xl font-bold text-white mt-1">$47,832.50</p>
+              <p className="text-3xl font-bold text-white mt-1">
+                {user
+                  ? `$${Number(user.total_balance || 0).toLocaleString()}`
+                  : '$0.00'}
+              </p>
               <p className="text-sm text-green-400">+12.34% today</p>
             </div>
           </div>
 
           {/* Scrollable Menu */}
-          <nav
-            className="flex-1 overflow-y-auto px-4 py-4 
-              scrollbar-thin 
-              scrollbar-thumb-rounded-full 
-              scrollbar-track-rounded-full 
-              scrollbar-track-gray-900 
-              transition-all duration-300"
-          >
+          <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-track-gray-900 transition-all duration-300">
             <style>
               {`
-                /* Custom Gradient Scrollbar */
                 .scrollbar-thin::-webkit-scrollbar {
                   width: 6px;
                 }
@@ -135,13 +209,11 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
             </ul>
           </nav>
 
-          {/* Footer */}
+          {/* Footer Logout */}
           <div className="p-2 border-t border-gray-800">
             <button
               className="w-full flex items-center space-x-4 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onClick={() => {
-                /* Add sign out logic */
-              }}
+              onClick={handleLogout}
             >
               <LogOut className="w-6 h-6" />
               <span className="font-medium text-base">Sign Out</span>

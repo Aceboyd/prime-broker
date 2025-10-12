@@ -1,55 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-  Activity,
-  Bitcoin,
-  Users,
+  Wallet,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const DashboardOverview = () => {
-  const stats = [
-    {
-      title: "Total Balance",
-      value: "$47,832.50",
-      change: "+12.34%",
-      trend: "up",
-      icon: DollarSign,
-      color: "from-green-500 to-green-600",
-    },
-    {
-      title: "Bitcoin Holdings",
-      value: "2.45 BTC",
-      change: "+8.92%",
-      trend: "up",
-      icon: Bitcoin,
-      color: "from-orange-500 to-orange-600",
-    },
-    {
-      title: "Active Trades",
-      value: "14",
-      change: "+2",
-      trend: "up",
-      icon: Activity,
-      color: "from-blue-500 to-blue-600",
-    },
-    {
-      title: "Referrals",
-      value: "23",
-      change: "+5",
-      trend: "up",
-      icon: Users,
-      color: "from-purple-500 to-purple-600",
-    },
-  ];
-
-  const topCryptos = [
-    { name: "Bitcoin", symbol: "BTC", price: "$43,250.00", change: "+5.67%", trend: "up" },
-    { name: "Ethereum", symbol: "ETH", price: "$2,890.50", change: "+3.42%", trend: "up" },
-    { name: "Cardano", symbol: "ADA", price: "$0.45", change: "-2.15%", trend: "down" },
-    { name: "Polkadot", symbol: "DOT", price: "$7.82", change: "+1.23%", trend: "up" },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState({
+    total_balance: 0,
+    total_deposit: 0,
+    total_profit: 0,
+  });
+  const [cryptoData, setCryptoData] = useState([]);
+  const [portfolioData, setPortfolioData] = useState([]);
 
   const activities = [
     { action: "Bought Bitcoin", amount: "0.05 BTC", time: "2 hours ago", status: "completed" },
@@ -58,8 +26,63 @@ const DashboardOverview = () => {
     { action: "Referral Bonus", amount: "$50", time: "2 days ago", status: "completed" },
   ];
 
+  // Fetch user stats & top cryptocurrencies
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+
+        // Fetch user profile
+        const profileRes = await axios.get("https://prime-api-gm2o.onrender.com/auth/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const { total_balance, total_deposit, total_profit } = profileRes.data.data;
+        setUserData({ total_balance, total_deposit, total_profit });
+
+        // Generate fake portfolio chart data
+        const chartData = Array.from({ length: 7 }, (_, i) => ({
+          name: `Day ${i + 1}`,
+          value: total_balance - 50 + Math.random() * 100,
+        }));
+        setPortfolioData(chartData);
+
+        // Fetch top 5 coins
+        const cryptoRes = await axios.get(
+          "https://api.coingecko.com/api/v3/coins/markets",
+          {
+            params: {
+              vs_currency: "usd",
+              order: "market_cap_desc",
+              per_page: 5,
+              page: 1,
+              sparkline: false,
+            },
+          }
+        );
+        setCryptoData(cryptoRes.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white text-lg">
+        Loading dashboard...
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8 lg:space-y-12">
+    <div className="min-h-screen bg-gray-950 text-white p-6 space-y-10">
       {/* Scrollbar Styles */}
       <style>
         {`
@@ -78,134 +101,126 @@ const DashboardOverview = () => {
         `}
       </style>
 
-      {/* Header with extra spacing from sidebar */}
-      <div className="lg:pl-2">
-        <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-          Dashboard Overview
-        </h1>
-        <p className="text-gray-400 text-sm lg:text-base">
-          Welcome back! Here's what's happening with your investments.
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+        <p className="text-gray-400">
+          Welcome back! Here’s what’s happening with your account.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={index}
-              className="bg-gray-800/60 backdrop-blur rounded-xl lg:rounded-2xl p-5 lg:p-6 hover:bg-gray-800/80 transition duration-300 h-full"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div
-                  className={`w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center`}
-                >
-                  <Icon className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-                </div>
-                <div
-                  className={`flex items-center space-x-1 ${
-                    stat.trend === "up" ? "text-green-400" : "text-red-400"
-                  }`}
-                >
-                  {stat.trend === "up" ? (
-                    <TrendingUp className="w-4 h-4" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4" />
-                  )}
-                  <span className="text-sm lg:text-base font-medium">
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
-              <h3 className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-gray-400 text-sm">{stat.title}</p>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+        {/* Total Balance */}
+        <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6 hover:bg-gray-800/80 transition duration-300">
+          <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4">
+            <Wallet className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold">${userData.total_balance}</h3>
+          <p className="text-gray-400 text-sm">Total Balance</p>
+        </div>
+
+        {/* Total Deposit */}
+        <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6 hover:bg-gray-800/80 transition duration-300">
+          <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center mb-4">
+            <DollarSign className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold">${userData.total_deposit}</h3>
+          <p className="text-gray-400 text-sm">Total Deposit</p>
+        </div>
+
+        {/* Total Profit */}
+        <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6 hover:bg-gray-800/80 transition duration-300">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+            <TrendingUp className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold">${userData.total_profit}</h3>
+          <p className="text-gray-400 text-sm">Total Profit</p>
+        </div>
       </div>
 
-      {/* Portfolio + Top Cryptos */}
+      {/* Portfolio Performance + Top Cryptos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Portfolio Chart Placeholder */}
-        <div className="bg-gray-800/60 backdrop-blur rounded-xl lg:rounded-2xl p-6 h-full">
-          <h3 className="text-xl font-bold text-white mb-6">
-            Portfolio Performance
-          </h3>
-          <div className="h-64 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-32 h-32 lg:w-40 lg:h-40 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
-              </div>
-              <p className="text-gray-400 text-base">
-                Chart visualization placeholder
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Integrate a chart library like Recharts or ApexCharts
-              </p>
-            </div>
+        {/* Portfolio Chart */}
+        <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6">
+          <h3 className="text-xl font-bold mb-6">Portfolio Performance</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={portfolioData}>
+                <XAxis dataKey="name" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "none",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Top Cryptocurrencies */}
-        <div className="bg-gray-800/60 backdrop-blur rounded-xl lg:rounded-2xl p-6 h-full">
-          <h3 className="text-xl font-bold text-white mb-6">
-            Top Cryptocurrencies
-          </h3>
+        <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6">
+          <h3 className="text-xl font-bold mb-6">Top Cryptocurrencies</h3>
           <div className="space-y-4 max-h-72 overflow-y-auto scrollbar-thin">
-            {topCryptos.map((crypto, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {crypto.symbol}
-                    </span>
+            {cryptoData.length === 0 ? (
+              <p className="text-gray-400">Loading data...</p>
+            ) : (
+              cryptoData.map((coin) => (
+                <div
+                  key={coin.id}
+                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition"
+                >
+                  <div className="flex items-center gap-3">
+                    <img src={coin.image} alt={coin.name} className="w-8 h-8" />
+                    <div>
+                      <h4 className="text-white font-medium">{coin.name}</h4>
+                      <p className="text-gray-400 text-sm">{coin.symbol.toUpperCase()}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white font-medium text-base">
-                      {crypto.name}
-                    </h4>
-                    <p className="text-gray-400 text-sm">{crypto.symbol}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-semibold text-base">
-                    {crypto.price}
-                  </p>
-                  <div
-                    className={`flex items-center space-x-1 ${
-                      crypto.trend === "up" ? "text-green-400" : "text-red-400"
-                    }`}
-                  >
-                    {crypto.trend === "up" ? (
-                      <TrendingUp className="w-4 h-4" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4" />
-                    )}
-                    <span className="text-sm">{crypto.change}</span>
+                  <div className="text-right">
+                    <p className="font-semibold">${coin.current_price.toLocaleString()}</p>
+                    <div
+                      className={`flex items-center justify-end ${
+                        coin.price_change_percentage_24h >= 0
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {coin.price_change_percentage_24h >= 0 ? (
+                        <TrendingUp className="w-4 h-4 mr-1" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 mr-1" />
+                      )}
+                      {coin.price_change_percentage_24h.toFixed(2)}%
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-gray-800/60 backdrop-blur rounded-xl lg:rounded-2xl p-6">
-        <h3 className="text-xl font-bold text-white mb-6">Recent Activity</h3>
+      <div className="bg-gray-800/60 backdrop-blur rounded-xl p-6">
+        <h3 className="text-xl font-bold mb-6">Recent Activity</h3>
         <div className="space-y-4 max-h-80 overflow-y-auto scrollbar-thin">
           {activities.map((activity, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+              className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition"
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <div
                   className={`w-2.5 h-2.5 rounded-full ${
                     activity.status === "completed"
@@ -214,16 +229,12 @@ const DashboardOverview = () => {
                   }`}
                 />
                 <div>
-                  <h4 className="text-white font-medium text-base">
-                    {activity.action}
-                  </h4>
+                  <h4 className="font-medium">{activity.action}</h4>
                   <p className="text-gray-400 text-sm">{activity.time}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-white font-semibold text-base">
-                  {activity.amount}
-                </p>
+                <p className="font-semibold">{activity.amount}</p>
                 <p
                   className={`text-sm capitalize ${
                     activity.status === "completed"

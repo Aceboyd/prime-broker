@@ -10,36 +10,47 @@ const SignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false
+    rememberMe: false,
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Map formData to API payload
+
     const payload = {
       email: formData.email,
-      password: formData.password
+      password: formData.password,
     };
 
     try {
-      console.log('Sending login request with payload:', payload); // Debug log
+      // 🔐 Send login request
       const response = await axios.post(
         'https://prime-api-gm2o.onrender.com/auth/login',
         payload,
         {
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            Accept: 'application/json',
+          },
         }
       );
 
-      // Store token in local storage (assuming response includes token)
+      // ✅ Store token securely
       const { token } = response.data;
       if (token) {
         localStorage.setItem('authToken', token);
       }
+
+      // ✅ Mask password before logging
+      const maskedPayload = {
+        email: payload.email,
+        password: '********',
+      };
+
+      // ✅ Log safe info only
+      console.log('Sign in success:', {
+        status: response.status,
+        user: maskedPayload,
+      });
 
       toast.success('Login successful! Redirecting to user dashboard...', {
         position: 'top-right',
@@ -47,10 +58,11 @@ const SignIn = () => {
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
-        draggable: true
+        draggable: true,
       });
-      console.log('Sign in success:', response.data);
-      navigate('/user-dashboard'); // Redirect to user dashboard
+
+      // ✅ Redirect after login
+      navigate('/user-dashboard');
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
       toast.error(`Error: ${errorMessage}`, {
@@ -59,27 +71,32 @@ const SignIn = () => {
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
-        draggable: true
+        draggable: true,
       });
-      console.error('Sign in error:', error.response?.data || error);
+
+      // ❌ Log only error status and message (no password)
+      console.error('Sign in failed:', {
+        status: error.response?.status,
+        message: errorMessage,
+      });
     }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center p-6">
       <div className="absolute inset-0 crypto-pattern opacity-30"></div>
-      
+
       <div className="relative max-w-md w-full">
         {/* Back to Home */}
-        <Link 
+        <Link
           to="/"
           className="inline-flex items-center text-white/70 hover:text-white mb-8 transition-colors"
         >
@@ -95,13 +112,18 @@ const SignIn = () => {
               <Bitcoin className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-400">Sign in to your Prime Investment account</p>
+            <p className="text-gray-400">
+              Sign in to your Prime Investment account
+            </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -117,7 +139,10 @@ const SignIn = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -136,7 +161,11 @@ const SignIn = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -152,7 +181,10 @@ const SignIn = () => {
                 />
                 <span className="ml-2 text-sm text-gray-300">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
+              <a
+                href="#"
+                className="text-sm text-primary-400 hover:text-primary-300 transition-colors"
+              >
                 Forgot password?
               </a>
             </div>
@@ -164,10 +196,14 @@ const SignIn = () => {
               Sign In
             </button>
           </form>
+
           {/* Sign Up Link */}
           <p className="mt-8 text-center text-gray-400">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+            <Link
+              to="/signup"
+              className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+            >
               Sign up for free
             </Link>
           </p>
