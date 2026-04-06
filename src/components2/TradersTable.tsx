@@ -129,7 +129,7 @@ export const TradersTable = () => {
   };
 
   return (
-    <div className="glass-effect rounded-2xl p-6 shadow-2xl">
+    <div className="rounded-2xl p-4 md:p-6 shadow-xl bg-white/5 border border-white/10 backdrop-blur">
       <h2 className="text-2xl font-bold text-white mb-6">Traders Management</h2>
 
       <div className="mb-6 space-y-4">

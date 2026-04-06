@@ -116,17 +116,17 @@ export const WalletAddressesTable = () => {
   };
 
   return (
-    <div className="glass-effect rounded-2xl p-6 shadow-2xl">
+    <div className="rounded-2xl p-4 md:p-6 shadow-xl bg-white/5 border border-white/10 backdrop-blur">
       <h2 className="text-2xl font-bold text-white mb-6">Wallet Addresses Management</h2>
       <div className="mb-6 space-y-4">
         <select
           value={editForm.currency}
           onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}
-          className="w-full max-w-xs px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+          className="w-full max-w-xs px-4 py-2 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         >
-          <option value="BTC">BTC</option>
-          <option value="ETH">ETH</option>
-          <option value="USDT">USDT</option>
+          <option value="BTC" className="bg-slate-900 text-white">BTC</option>
+          <option value="ETH" className="bg-slate-900 text-white">ETH</option>
+          <option value="USDT" className="bg-slate-900 text-white">USDT</option>
         </select>
         <input
           type="text"
@@ -176,11 +176,11 @@ export const WalletAddressesTable = () => {
                         <select
                           value={editForm.currency}
                           onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}
-                          className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-2 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                         >
-                          <option value="BTC">BTC</option>
-                          <option value="ETH">ETH</option>
-                          <option value="USDT">USDT</option>
+                          <option value="BTC" className="bg-slate-900 text-white">BTC</option>
+                          <option value="ETH" className="bg-slate-900 text-white">ETH</option>
+                          <option value="USDT" className="bg-slate-900 text-white">USDT</option>
                         </select>
                       </td>
                       <td className="py-4 px-6">

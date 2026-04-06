@@ -11,7 +11,12 @@ import Login from './pages/Login';
 import './index.css';
 
 // ProtectedRoute component to restrict access
-const ProtectedRoute = ({ children, requireAdmin = false }) => {
+type ProtectedRouteProps = {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+};
+
+const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const token = requireAdmin
     ? localStorage.getItem('adminToken')
     : localStorage.getItem('authToken') || localStorage.getItem('adminToken');

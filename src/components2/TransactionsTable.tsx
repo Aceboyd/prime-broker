@@ -356,17 +356,17 @@ export const TransactionsTable = () => {
   };
 
   return (
-    <div className="w-full max-w-[calc(100vw-280px)] mx-auto glass-effect rounded-2xl p-6 shadow-2xl">
+    <div className="w-full max-w-full md:max-w-[calc(100vw-320px)] mx-auto rounded-2xl p-4 md:p-6 shadow-xl bg-white/5 border border-white/10 backdrop-blur">
       <h2 className="text-2xl font-bold text-white mb-6">Transactions Management</h2>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
         <select
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          className="w-full sm:max-w-xs min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+          className="w-full sm:max-w-xs min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
         >
-          <option value="">Select User</option>
+          <option value="" className="bg-slate-900 text-white">Select User</option>
           {users.map((user) => (
-            <option key={user.id} value={user.id}>
+            <option key={user.id} value={user.id} className="bg-slate-900 text-white">
               {user.first_name} {user.last_name} ({user.email})
             </option>
           ))}
@@ -402,11 +402,11 @@ export const TransactionsTable = () => {
             <select
               value={createForm.userId}
               onChange={(e) => setCreateForm({ ...createForm, userId: e.target.value })}
-              className="min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+              className="min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
             >
-              <option value="">Select User</option>
+              <option value="" className="bg-slate-900 text-white">Select User</option>
               {users.map((user) => (
-                <option key={user.id} value={user.id}>
+                <option key={user.id} value={user.id} className="bg-slate-900 text-white">
                   {user.first_name} {user.last_name} ({user.email})
                 </option>
               ))}
@@ -414,20 +414,20 @@ export const TransactionsTable = () => {
             <select
               value={createForm.type}
               onChange={(e) => setCreateForm({ ...createForm, type: e.target.value })}
-              className="min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+              className="min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
             >
-              <option value="deposit">Deposit</option>
-              <option value="withdraw">Withdrawal</option>
-              <option value="trade">Trade</option>
+              <option value="deposit" className="bg-slate-900 text-white">Deposit</option>
+              <option value="withdraw" className="bg-slate-900 text-white">Withdrawal</option>
+              <option value="trade" className="bg-slate-900 text-white">Trade</option>
             </select>
             <select
               value={createForm.asset}
               onChange={(e) => setCreateForm({ ...createForm, asset: e.target.value })}
-              className="min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+              className="min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
             >
-              <option value="">Select Asset</option>
+              <option value="" className="bg-slate-900 text-white">Select Asset</option>
               {assets.map((asset) => (
-                <option key={asset} value={asset}>
+                <option key={asset} value={asset} className="bg-slate-900 text-white">
                   {asset}
                 </option>
               ))}
@@ -459,11 +459,11 @@ export const TransactionsTable = () => {
             <select
               value={createForm.status}
               onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
-              className="min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+              className="min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
             >
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
+              <option value="pending" className="bg-slate-900 text-white">Pending</option>
+              <option value="completed" className="bg-slate-900 text-white">Completed</option>
+              <option value="failed" className="bg-slate-900 text-white">Failed</option>
             </select>
           </div>
           <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4">
@@ -521,22 +521,22 @@ export const TransactionsTable = () => {
                         <select
                           value={editForm.type}
                           onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
-                          className="w-full min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+                          className="w-full min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
                         >
-                          <option value="deposit">Deposit</option>
-                          <option value="withdraw">Withdrawal</option>
-                          <option value="trade">Trade</option>
+                          <option value="deposit" className="bg-slate-900 text-white">Deposit</option>
+                          <option value="withdraw" className="bg-slate-900 text-white">Withdrawal</option>
+                          <option value="trade" className="bg-slate-900 text-white">Trade</option>
                         </select>
                       </td>
                       <td className="py-4 px-4 md:px-6">
                         <select
                           value={editForm.asset}
                           onChange={(e) => setEditForm({ ...editForm, asset: e.target.value })}
-                          className="w-full min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+                          className="w-full min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
                         >
-                          <option value="">Select Asset</option>
+                          <option value="" className="bg-slate-900 text-white">Select Asset</option>
                           {assets.map((asset) => (
-                            <option key={asset} value={asset}>
+                            <option key={asset} value={asset} className="bg-slate-900 text-white">
                               {asset}
                             </option>
                           ))}
@@ -576,11 +576,11 @@ export const TransactionsTable = () => {
                         <select
                           value={editForm.status}
                           onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                          className="w-full min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
+                          className="w-full min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-white transition-all text-lg"
                         >
-                          <option value="pending">Pending</option>
-                          <option value="completed">Completed</option>
-                          <option value="failed">Failed</option>
+                          <option value="pending" className="bg-slate-900 text-white">Pending</option>
+                          <option value="completed" className="bg-slate-900 text-white">Completed</option>
+                          <option value="failed" className="bg-slate-900 text-white">Failed</option>
                         </select>
                       </td>
                       <td className="py-4 px-4 md:px-6 min-w-[140px]">

@@ -1,16 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Edit, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL, Trader, User } from '../types';
 
 export const UsersTable = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingUserId, setEditingUserId] = useState(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editForm, setEditForm] = useState({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  type EditForm = {
+    first_name: string;
+    last_name: string;
+    email: string;
+    country: string;
+    phone: string;
+    total_balance: number;
+    total_deposit: number;
+    total_profit: number;
+    kyc_status: 'pending' | 'approved' | 'rejected';
+    selected_trader: string | null;
+  };
+  const [editForm, setEditForm] = useState<EditForm>({
     first_name: '',
     last_name: '',
     email: '',
@@ -22,7 +37,7 @@ export const UsersTable = () => {
     kyc_status: 'pending',
     selected_trader: null,
   });
-  const [traders, setTraders] = useState([]);
+  const [traders, setTraders] = useState<Trader[]>([]);
 
   useEffect(() => {
     fetchUsers();
@@ -33,7 +48,7 @@ export const UsersTable = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await axios.get('https://prime-api-gm2o.onrender.com/admin/users', {
+      const res = await axios.get(`${API_BASE_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' },
       });
       if (res.data.success) {
@@ -74,7 +89,7 @@ export const UsersTable = () => {
   const fetchTraders = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await axios.get('https://prime-api-gm2o.onrender.com/admin/traders', {
+      const res = await axios.get(`${API_BASE_URL}/admin/traders`, {
         headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' },
       });
       if (res.data.success) {
@@ -85,7 +100,10 @@ export const UsersTable = () => {
     }
   };
 
-  const handleEditFormChange = (e, field) => {
+  const handleEditFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    field: keyof EditForm
+  ) => {
     const value = field.includes('total_') ? parseFloat(e.target.value) || 0 : e.target.value;
     setEditForm((prev) => {
       const newForm = { ...prev, [field]: value };
@@ -126,7 +144,7 @@ export const UsersTable = () => {
         ...editForm,
         total_balance: editForm.total_deposit + editForm.total_profit,
       };
-      const res = await axios.put(`https://prime-api-gm2o.onrender.com/admin/users/${id}`, payload, {
+      const res = await axios.put(`${API_BASE_URL}/admin/users/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' },
       });
       if (res.data.success) {
@@ -169,7 +187,7 @@ export const UsersTable = () => {
     setIsDeleting(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await axios.delete(`https://prime-api-gm2o.onrender.com/admin/users/${id}`, {
+      const res = await axios.delete(`${API_BASE_URL}/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' },
       });
       if (res.data.success) {
@@ -208,12 +226,83 @@ export const UsersTable = () => {
     }
   };
 
+  // KYC actions handled in KYC tab now
+
+  const filteredUsers = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return users.filter((user) => {
+      const matchesStatus = statusFilter === 'all' ? true : user.kyc_status === statusFilter;
+      const matchesSearch =
+        term.length === 0 ||
+        `${user.first_name} ${user.last_name}`.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term) ||
+        user.country?.toLowerCase().includes(term) ||
+        user.phone?.toLowerCase().includes(term);
+      return matchesStatus && matchesSearch;
+    });
+  }, [users, searchTerm, statusFilter]);
+
+  const totalUsers = users.length;
+  const pendingKyc = users.filter((u) => u.kyc_status === 'pending').length;
+  const approvedKyc = users.filter((u) => u.kyc_status === 'approved').length;
+  const rejectedKyc = users.filter((u) => u.kyc_status === 'rejected').length;
+
   return (
-    <div className="w-full max-w-[calc(100vw-280px)] mx-auto glass-effect rounded-2xl p-6 shadow-2xl">
-      <h2 className="text-2xl font-bold text-white mb-6">Users Management</h2>
+    <div className="w-full max-w-full md:max-w-[calc(100vw-320px)] mx-auto rounded-2xl p-4 md:p-6 shadow-xl bg-white/5 border border-white/10 backdrop-blur">
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Users Management</h2>
+            <p className="text-white/60 text-sm">Manage users, balances, and KYC decisions in one place.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+            <p className="text-white/60 text-xs uppercase tracking-widest">Total Users</p>
+            <p className="text-2xl font-semibold text-white">{totalUsers}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-yellow-500/10 p-4 backdrop-blur">
+            <p className="text-yellow-200/80 text-xs uppercase tracking-widest">KYC Pending</p>
+            <p className="text-2xl font-semibold text-yellow-200">{pendingKyc}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-green-500/10 p-4 backdrop-blur">
+            <p className="text-green-200/80 text-xs uppercase tracking-widest">KYC Approved</p>
+            <p className="text-2xl font-semibold text-green-200">{approvedKyc}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-red-500/10 p-4 backdrop-blur">
+            <p className="text-red-200/80 text-xs uppercase tracking-widest">KYC Rejected</p>
+            <p className="text-2xl font-semibold text-red-200">{rejectedKyc}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+          <div className="flex-1">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, email, phone, or country..."
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'approved' | 'rejected')}
+              className="px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            >
+              <option value="all" className="bg-slate-900 text-white">All KYC</option>
+              <option value="pending" className="bg-slate-900 text-white">Pending</option>
+              <option value="approved" className="bg-slate-900 text-white">Approved</option>
+              <option value="rejected" className="bg-slate-900 text-white">Rejected</option>
+            </select>
+          </div>
+        </div>
+      </div>
       {loading ? (
         <p className="text-gray-400 text-lg">Loading users...</p>
-      ) : users.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <p className="text-gray-400 text-lg">No users found.</p>
       ) : (
         <div className="overflow-x-auto">
@@ -227,13 +316,13 @@ export const UsersTable = () => {
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Balance</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Deposit</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Profit</th>
-                <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">KYC Status</th>
+                {/* KYC removed from Users table (handled in KYC tab) */}
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Trader</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[180px]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-b border-white/10 hover:bg-white/10 transition-colors">
                   {editingUserId === user.id ? (
                     <>
@@ -283,7 +372,7 @@ export const UsersTable = () => {
                       <td className="py-4 px-4 md:px-6">
                         <input
                           type="number"
-                          value={editForm.total_balance.toFixed(2)}
+                          value={editForm.total_balance ? editForm.total_balance.toFixed(2) : ''}
                           disabled
                           className="w-full min-w-[200px] px-4 py-3 bg-white/20 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-all text-lg opacity-70 cursor-not-allowed"
                           placeholder="Balance"
@@ -292,7 +381,7 @@ export const UsersTable = () => {
                       <td className="py-4 px-4 md:px-6">
                         <input
                           type="number"
-                          value={editForm.total_deposit}
+                          value={editForm.total_deposit ? editForm.total_deposit : ''}
                           onChange={(e) => handleEditFormChange(e, 'total_deposit')}
                           className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
                           placeholder="Deposit"
@@ -301,32 +390,22 @@ export const UsersTable = () => {
                       <td className="py-4 px-4 md:px-6">
                         <input
                           type="number"
-                          value={editForm.total_profit}
+                          value={editForm.total_profit ? editForm.total_profit : ''}
                           onChange={(e) => handleEditFormChange(e, 'total_profit')}
                           className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
                           placeholder="Profit"
                         />
                       </td>
-                      <td className="py-4 px-4 md:px-6">
-                        <select
-                          value={editForm.kyc_status}
-                          onChange={(e) => handleEditFormChange(e, 'kyc_status')}
-                          className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      </td>
+                      {/* KYC removed from Users table (handled in KYC tab) */}
                       <td className="py-4 px-4 md:px-6">
                         <select
                           value={editForm.selected_trader || ''}
                           onChange={(e) => handleEditFormChange(e, 'selected_trader')}
-                          className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
+                          className="w-full min-w-[200px] px-4 py-3 bg-slate-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
                         >
-                          <option value="">No Trader</option>
+                          <option value="" className="bg-slate-900 text-white">No Trader</option>
                           {traders.map((trader) => (
-                            <option key={trader.id} value={trader.id}>
+                            <option key={trader.id} value={trader.id} className="bg-slate-900 text-white">
                               {trader.name}
                             </option>
                           ))}
@@ -362,19 +441,7 @@ export const UsersTable = () => {
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_balance?.toFixed(2) || '0.00'}</td>
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_deposit?.toFixed(2) || '0.00'}</td>
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_profit?.toFixed(2) || '0.00'}</td>
-                      <td className="py-4 px-4 md:px-6 min-w-[120px]">
-                        <span
-                          className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                            user.kyc_status === 'approved'
-                              ? 'bg-green-500/30 text-green-300'
-                              : user.kyc_status === 'rejected'
-                              ? 'bg-red-500/30 text-red-300'
-                              : 'bg-yellow-500/30 text-yellow-300'
-                          }`}
-                        >
-                          {user.kyc_status || 'Pending'}
-                        </span>
-                      </td>
+                      {/* KYC removed from Users table (handled in KYC tab) */}
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">{traders.find(t => t.id === user.selected_trader)?.name || 'None'}</td>
                       <td className="py-4 px-4 md:px-6 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 min-w-[180px]">
                         <button
