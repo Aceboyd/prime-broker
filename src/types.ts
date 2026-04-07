@@ -41,6 +41,16 @@ export type Trader = {
   description: string;
   performance: number;
   active: boolean;
+  followers?: number;
+  risk?: "Low" | "Medium" | "High";
+  roi?: number;
+  win_rate?: number;
+  trades?: number;
+  min_invest?: number;
+  max_invest?: number;
+  duration?: string;
+  slots?: number;
+  image_url?: string;
 };
 
 export type WalletAddress = {
