@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   CheckCircle,
   ClipboardCopy,
@@ -141,7 +141,7 @@ const CopyTrading = () => {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-emerald-400">Expert Traders</h1>
             <p className="text-gray-400 mt-1">
-              Verified professionals • Copy trades automatically • Earn passive income
+              Verified professionals â€¢ Copy trades automatically â€¢ Earn passive income
             </p>
           </div>
         </div>

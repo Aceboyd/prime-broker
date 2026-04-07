@@ -9,6 +9,8 @@ export type User = {
   total_balance: number;
   total_deposit: number;
   total_profit: number;
+  bonus?: number;
+  total_withdrawal?: number;
   kyc_status: 'pending' | 'approved' | 'rejected';
   selected_trader?: string | null;
   kyc_documents?: {

@@ -16,6 +16,8 @@ const DashboardOverview = ({ setActiveTab }: { setActiveTab?: (tab: string) => v
     total_balance: 0,
     total_deposit: 0,
     total_profit: 0,
+    bonus: 0,
+    total_withdrawal: 0,
     first_name: "",
     last_name: "",
   });
@@ -75,8 +77,16 @@ const DashboardOverview = ({ setActiveTab }: { setActiveTab?: (tab: string) => v
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const { total_balance, total_deposit, total_profit, first_name, last_name } = profileRes.data.data;
-        setUserData({ total_balance, total_deposit, total_profit, first_name, last_name });
+        const {
+          total_balance,
+          total_deposit,
+          total_profit,
+          bonus = 0,
+          total_withdrawal = 0,
+          first_name,
+          last_name,
+        } = profileRes.data.data;
+        setUserData({ total_balance, total_deposit, total_profit, bonus, total_withdrawal, first_name, last_name });
 
         const chartData = Array.from({ length: 7 }, (_, i) => ({
           name: `Day ${i + 1}`,

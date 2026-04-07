@@ -22,6 +22,8 @@ export const UsersTable = () => {
     total_balance: number;
     total_deposit: number;
     total_profit: number;
+    bonus: number;
+    total_withdrawal: number;
     kyc_status: 'pending' | 'approved' | 'rejected';
     selected_trader: string | null;
   };
@@ -34,6 +36,8 @@ export const UsersTable = () => {
     total_balance: 0,
     total_deposit: 0,
     total_profit: 0,
+    bonus: 0,
+    total_withdrawal: 0,
     kyc_status: 'pending',
     selected_trader: null,
   });
@@ -104,11 +108,15 @@ export const UsersTable = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     field: keyof EditForm
   ) => {
-    const value = field.includes('total_') ? parseFloat(e.target.value) || 0 : e.target.value;
+    const value = field.includes('total_') || field === 'bonus' ? parseFloat(e.target.value) || 0 : e.target.value;
     setEditForm((prev) => {
       const newForm = { ...prev, [field]: value };
-      if (field === 'total_deposit' || field === 'total_profit') {
-        newForm.total_balance = (newForm.total_deposit || 0) + (newForm.total_profit || 0);
+      if (field === 'total_deposit' || field === 'total_profit' || field === 'bonus' || field === 'total_withdrawal') {
+        newForm.total_balance =
+          (newForm.total_deposit || 0) +
+          (newForm.total_profit || 0) +
+          (newForm.bonus || 0) -
+          (newForm.total_withdrawal || 0);
       }
       return newForm;
     });
@@ -126,8 +134,8 @@ export const UsersTable = () => {
       });
       return;
     }
-    if (editForm.total_deposit < 0 || editForm.total_profit < 0) {
-      toast.error('Deposit and profit cannot be negative', {
+    if (editForm.total_deposit < 0 || editForm.total_profit < 0 || editForm.bonus < 0 || editForm.total_withdrawal < 0) {
+      toast.error('Values cannot be negative', {
         position: 'top-right',
         autoClose: 5000,
         hideProgressBar: false,
@@ -142,7 +150,8 @@ export const UsersTable = () => {
       const token = localStorage.getItem('adminToken');
       const payload = {
         ...editForm,
-        total_balance: editForm.total_deposit + editForm.total_profit,
+        total_balance:
+          editForm.total_deposit + editForm.total_profit + editForm.bonus - editForm.total_withdrawal,
       };
       const res = await axios.put(`${API_BASE_URL}/admin/users/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' },
@@ -316,6 +325,8 @@ export const UsersTable = () => {
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Balance</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Deposit</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Profit</th>
+                <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Bonus</th>
+                <th className="py-4 px-4 md:px-6 font-semibold min-w-[140px]">Withdrawal</th>
                 {/* KYC removed from Users table (handled in KYC tab) */}
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[120px]">Trader</th>
                 <th className="py-4 px-4 md:px-6 font-semibold min-w-[180px]">Actions</th>
@@ -396,6 +407,24 @@ export const UsersTable = () => {
                           placeholder="Profit"
                         />
                       </td>
+                      <td className="py-4 px-4 md:px-6">
+                        <input
+                          type="number"
+                          value={editForm.bonus ? editForm.bonus : ''}
+                          onChange={(e) => handleEditFormChange(e, 'bonus')}
+                          className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
+                          placeholder="Bonus"
+                        />
+                      </td>
+                      <td className="py-4 px-4 md:px-6">
+                        <input
+                          type="number"
+                          value={editForm.total_withdrawal ? editForm.total_withdrawal : ''}
+                          onChange={(e) => handleEditFormChange(e, 'total_withdrawal')}
+                          className="w-full min-w-[200px] px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg"
+                          placeholder="Withdrawal"
+                        />
+                      </td>
                       {/* KYC removed from Users table (handled in KYC tab) */}
                       <td className="py-4 px-4 md:px-6">
                         <select
@@ -441,6 +470,8 @@ export const UsersTable = () => {
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_balance?.toFixed(2) || '0.00'}</td>
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_deposit?.toFixed(2) || '0.00'}</td>
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.total_profit?.toFixed(2) || '0.00'}</td>
+                      <td className="py-4 px-4 md:px-6 min-w-[120px]">${user.bonus?.toFixed(2) || '0.00'}</td>
+                      <td className="py-4 px-4 md:px-6 min-w-[140px]">${user.total_withdrawal?.toFixed(2) || '0.00'}</td>
                       {/* KYC removed from Users table (handled in KYC tab) */}
                       <td className="py-4 px-4 md:px-6 min-w-[120px]">{traders.find(t => t.id === user.selected_trader)?.name || 'None'}</td>
                       <td className="py-4 px-4 md:px-6 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 min-w-[180px]">
@@ -453,9 +484,15 @@ export const UsersTable = () => {
                               email: user.email,
                               country: user.country || '',
                               phone: user.phone || '',
-                              total_balance: (user.total_deposit || 0) + (user.total_profit || 0),
+                              total_balance:
+                                (user.total_deposit || 0) +
+                                (user.total_profit || 0) +
+                                (user.bonus || 0) -
+                                (user.total_withdrawal || 0),
                               total_deposit: user.total_deposit || 0,
                               total_profit: user.total_profit || 0,
+                              bonus: user.bonus || 0,
+                              total_withdrawal: user.total_withdrawal || 0,
                               kyc_status: user.kyc_status || 'pending',
                               selected_trader: user.selected_trader || null,
                             });

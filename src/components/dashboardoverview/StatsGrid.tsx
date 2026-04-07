@@ -1,4 +1,4 @@
-import React from "react";
+ï»¿import React from "react";
 import {
   TrendingUp,
   DollarSign,
@@ -13,6 +13,8 @@ type UserData = {
   total_balance: number;
   total_deposit: number;
   total_profit: number;
+  bonus?: number;
+  total_withdrawal?: number;
 };
 
 type StatsGridProps = {
@@ -49,7 +51,7 @@ const StatsGrid = ({ userData, showBalance, onToggleBalance, formattedDate, form
 
         <div className="mt-6">
           <p className="text-3xl sm:text-4xl font-semibold">
-            {showBalance ? formatMoney(userData.total_balance) : "••••••"}
+            {showBalance ? formatMoney(userData.total_balance) : "â€¢â€¢â€¢â€¢â€¢â€¢"}
           </p>
           <span className="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs">
             <TrendingUp className="w-4 h-4" />
@@ -90,7 +92,7 @@ const StatsGrid = ({ userData, showBalance, onToggleBalance, formattedDate, form
               <Gift className="w-5 h-5 text-yellow-400" />
             </div>
           </div>
-          <p className="text-xl font-semibold mt-4">$0.00</p>
+          <p className="text-xl font-semibold mt-4">{formatMoney(userData.bonus || 0)}</p>
           <p className="text-xs text-yellow-400 mt-2">Rewards & Promotions</p>
         </div>
 
@@ -112,7 +114,7 @@ const StatsGrid = ({ userData, showBalance, onToggleBalance, formattedDate, form
               <ArrowUpFromLine className="w-5 h-5 text-emerald-400" />
             </div>
           </div>
-          <p className="text-xl font-semibold mt-4">$0.00</p>
+          <p className="text-xl font-semibold mt-4">{formatMoney(userData.total_withdrawal || 0)}</p>
           <p className="text-xs text-emerald-400 mt-2">All time</p>
         </div>
       </div>

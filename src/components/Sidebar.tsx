@@ -79,16 +79,13 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
         { id: 'stock-market', icon: LineChart, label: 'Stock Market', mapTo: 'market-trades' },
         { id: 'crypto-exchange', icon: Bitcoin, label: 'Crypto Exchange', mapTo: 'crypto-exchange' },
         { id: 'copy-trading', icon: Users, label: 'Copy Trading', mapTo: 'copy-trading' },
-        { id: 'bot-trading', icon: Bot, label: 'Bot Trading', mapTo: 'trader' },
-        { id: 'crypto-staking', icon: Coins, label: 'Crypto Staking', mapTo: 'trader' },
-        { id: 'active-investments', icon: Folder, label: 'Active Investments', mapTo: 'market-trades' },
+        { id: 'bot-trading', icon: Bot, label: 'Bot Trading', mapTo: 'bot-trading' },
+        { id: 'crypto-staking', icon: Coins, label: 'Crypto Staking', mapTo: 'crypto-staking' },
       ],
     },
     {
       title: 'Services',
-      items: [
-        { id: 'affiliate-program', icon: Users, label: 'Affiliate Program', mapTo: 'account' },
-      ],
+      items: [],
     },
   ];
 
@@ -225,7 +222,7 @@ const Sidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
           </div>
           <button
                 className="mt-4 w-full flex items-center justify-center gap-3 rounded-xl bg-white/10 hover:bg-white/15 text-gray-100 py-3 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                onClick={() => setActiveTab('account')}
+                onClick={() => setActiveTab('support')}
               >
                 <MessageCircle className="w-5 h-5" />
                 <span className="font-medium text-sm">Contact Support</span>

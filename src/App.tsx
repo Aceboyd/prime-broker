@@ -32,7 +32,7 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route
-            path="/user-dashboard"
+            path="/user-dashboard/*"
             element={
               <ProtectedRoute>
                 <User />

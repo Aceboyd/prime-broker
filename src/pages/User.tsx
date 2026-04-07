@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header2 from '../components/Header2';
 import DashboardOverview from '../components/dashboardoverview';
@@ -13,21 +14,70 @@ import InvestmentPlans from '../components/InvestmentPlans';
 import StockInvestmentPlans from '../components/StockInvestmentPlans';
 import CryptoExchange from '../components/CryptoExchange';
 import CopyTrading from '../components/CopyTrading';
+import BotTrading, { BotItem } from '../components/BotTrading';
+import BotSubscriptions from '../components/BotSubscriptions';
+import BotDetail from '../components/BotDetail';
+import CryptoStaking, { StakingPlan } from '../components/CryptoStaking';
+import CryptoStakingDetail from '../components/CryptoStakingDetail';
+import Support from '../components/Support';
 import Trader from '../components/Trader';
 import ChangePassword from '../components/ChangePassword';
 import LoginHistory from '../components/LoginHistory';
 
 const User = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
   const [kycModalOpen, setKycModalOpen] = useState(false);
   const [withdrawLoginOpen, setWithdrawLoginOpen] = useState(false);
+  const [selectedBot, setSelectedBot] = useState<BotItem | null>(null);
+  const [selectedStakingPlan, setSelectedStakingPlan] = useState<StakingPlan | null>(null);
+
+  const tabRoutes = useMemo(
+    () => ({
+      overview: '/user-dashboard',
+      'deposit-withdraw': '/user-dashboard/fund-account',
+      withdrawal: '/user-dashboard/withdraw-funds',
+      transactions: '/user-dashboard/transactions',
+      'market-trades': '/user-dashboard/stock-market',
+      'investment-plans': '/user-dashboard/investment-plans',
+      'stock-investment': '/user-dashboard/stock-investment',
+      'crypto-exchange': '/user-dashboard/crypto-exchange',
+      'copy-trading': '/user-dashboard/copy-trading',
+      trader: '/user-dashboard/trader',
+      'bot-trading': '/user-dashboard/bot-trading',
+      'bot-subscriptions': '/user-dashboard/bot-subscriptions',
+      'bot-detail': '/user-dashboard/bot-detail',
+      'crypto-staking': '/user-dashboard/crypto-staking',
+      'crypto-staking-detail': '/user-dashboard/crypto-staking-detail',
+      kyc: '/user-dashboard/kyc',
+      account: '/user-dashboard/account',
+      'change-password': '/user-dashboard/change-password',
+      'login-history': '/user-dashboard/login-history',
+      support: '/user-dashboard/support',
+    }),
+    []
+  );
+
+  const routeToTab = useMemo(() => {
+    const entries = Object.entries(tabRoutes).map(([key, value]) => [value, key] as const);
+    return Object.fromEntries(entries);
+  }, [tabRoutes]);
+
+  const handleSetActiveTab = (tab: string) => {
+    setActiveTab(tab);
+    const target = tabRoutes[tab as keyof typeof tabRoutes] || '/user-dashboard';
+    if (location.pathname !== target) {
+      navigate(target);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <DashboardOverview setActiveTab={setActiveTab} />;
+        return <DashboardOverview setActiveTab={handleSetActiveTab} />;
       case 'deposit-withdraw':
         return <DepositFunds />;
       case 'withdrawal':
@@ -42,22 +92,66 @@ const User = () => {
         return <StockInvestmentPlans />;
       case 'crypto-exchange':
         return <CryptoExchange />;
+      case 'crypto-staking':
+        return (
+          <CryptoStaking
+            onViewDetails={(plan) => {
+              setSelectedStakingPlan(plan);
+              handleSetActiveTab('crypto-staking-detail');
+            }}
+          />
+        );
+      case 'crypto-staking-detail':
+        return (
+          <CryptoStakingDetail
+            plan={selectedStakingPlan}
+            onBack={() => handleSetActiveTab('crypto-staking')}
+          />
+        );
       case 'copy-trading':
         return <CopyTrading />;
+      case 'bot-trading':
+        return (
+          <BotTrading
+            onSubscriptions={() => handleSetActiveTab('bot-subscriptions')}
+            onSubscribe={(bot) => {
+              setSelectedBot(bot);
+              handleSetActiveTab('bot-detail');
+            }}
+          />
+        );
+      case 'bot-subscriptions':
+        return (
+          <BotSubscriptions
+            onBrowseBots={() => handleSetActiveTab('bot-trading')}
+            onViewBot={() => handleSetActiveTab('bot-detail')}
+          />
+        );
+      case 'bot-detail':
+        return <BotDetail onBack={() => handleSetActiveTab('bot-trading')} bot={selectedBot} />;
       case 'trader':
         return <Trader />;
       case 'kyc':
         return <KYCVerification />;
       case 'account':
-        return <AccountInfo setActiveTab={setActiveTab} />;
+        return <AccountInfo setActiveTab={handleSetActiveTab} />;
       case 'change-password':
-        return <ChangePassword setActiveTab={setActiveTab} />;
+        return <ChangePassword setActiveTab={handleSetActiveTab} />;
       case 'login-history':
-        return <LoginHistory setActiveTab={setActiveTab} />;
+        return <LoginHistory setActiveTab={handleSetActiveTab} />;
+      case 'support':
+        return <Support />;
       default:
         return <DashboardOverview />;
     }
   };
+
+  React.useEffect(() => {
+    const tab = routeToTab[location.pathname];
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [location.pathname, routeToTab, activeTab]);
 
   React.useEffect(() => {
     if (activeTab === 'withdrawal') {
@@ -86,7 +180,7 @@ const User = () => {
       >
         <Sidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleSetActiveTab}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
@@ -98,7 +192,7 @@ const User = () => {
         
         <Header2
           onKycClick={() => setKycModalOpen(true)}
-          onTransactions={() => setActiveTab('transactions')}
+          onTransactions={() => handleSetActiveTab('transactions')}
         />
 
         {/* KYC Modal */}
@@ -127,7 +221,7 @@ const User = () => {
                   className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 transition"
                   onClick={() => {
                     setKycModalOpen(false);
-                    setActiveTab('kyc');
+                    handleSetActiveTab('kyc');
                   }}
                 >
                   Verify Account
@@ -182,14 +276,14 @@ const User = () => {
                 Login
               </button>
               <button
-                className="w-full rounded-xl bg-white/10 hover:bg-white/15 text-gray-200 font-medium py-3 transition"
-                onClick={() => {
-                  setWithdrawLoginOpen(false);
-                  setActiveTab('overview');
-                }}
-              >
-                Cancel
-              </button>
+                  className="w-full rounded-xl bg-white/10 hover:bg-white/15 text-gray-200 font-medium py-3 transition"
+                  onClick={() => {
+                    setWithdrawLoginOpen(false);
+                    handleSetActiveTab('overview');
+                  }}
+                >
+                  Cancel
+                </button>
             </div>
           </div>
         </div>
